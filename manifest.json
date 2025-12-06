@@ -5,7 +5,8 @@
     "description": "就活サイトのES入力を自動化する拡張機能",
     "permissions": [
         "activeTab",
-        "scripting"
+        "scripting",
+        "storage"
     ],
     "action": {
         "default_popup": "popup.html"
