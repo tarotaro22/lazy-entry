@@ -164,31 +164,31 @@ function autoFill() {
         const txt = `${name} ${id} ${label} ${placeholder}`;
 
         // --- 氏名 ---
-        if (txt.includes('kanji') || txt.includes('k_') || txt.includes('name')) {
-            if (txt.includes('sei') || txt.includes('last') || txt.includes('family')) {
+        if (txt.includes('kanji') || txt.includes('k_') || txt.includes('name') || txt.includes('kname')) {
+            if (txt.includes('sei') || txt.includes('last') || txt.includes('family') || txt.includes('name1') || txt.includes('kname1')) {
                 fillField(el, MY_PROFILE.name.kanji_sei);
-            } else if (txt.includes('mei') || txt.includes('first') || (txt.includes('name') && txt.includes('na') && !txt.includes('kana'))) {
+            } else if (txt.includes('mei') || txt.includes('first') || (txt.includes('name') && txt.includes('na') && !txt.includes('kana')) || txt.includes('name2') || txt.includes('kname2')) {
                 // "kanji_na" のようなパターン
                 fillField(el, MY_PROFILE.name.kanji_mei);
             }
         }
 
         // カナ
-        if (txt.includes('kana') || txt.includes('furi')) {
-            if (txt.includes('sei') || txt.includes('last')) {
+        if (txt.includes('kana') || txt.includes('furi') || txt.includes('yname')) {
+            if (txt.includes('sei') || txt.includes('last') || txt.includes('yname1')) {
                 fillField(el, MY_PROFILE.name.kana_sei);
-            } else if (txt.includes('mei') || txt.includes('first') || txt.includes('na')) {
+            } else if (txt.includes('mei') || txt.includes('first') || txt.includes('na') || txt.includes('yname2')) {
                 fillField(el, MY_PROFILE.name.kana_mei);
             }
         }
 
         // --- 生年月日 ---
         if (txt.includes('birth')) {
-            if (txt.includes('year') || txt.includes('_y')) {
+            if (txt.includes('year') || txt.includes('_y') || txt.includes('ybirth')) {
                 fillField(el, MY_PROFILE.birth.year);
-            } else if (txt.includes('month') || txt.includes('_m')) {
+            } else if (txt.includes('month') || txt.includes('_m') || txt.includes('mbirth')) {
                 fillField(el, MY_PROFILE.birth.month);
-            } else if (txt.includes('day') || txt.includes('_d')) {
+            } else if (txt.includes('day') || txt.includes('_d') || txt.includes('dbirth')) {
                 fillField(el, MY_PROFILE.birth.day);
             }
         }
@@ -196,16 +196,14 @@ function autoFill() {
         // --- 住所 ---
         // 郵便番号
         if (txt.includes('zip') || txt.includes('post') || txt.includes('yubin')) {
-            // 分割パターン (yubing_h, yubing_l)
-            if (txt.includes('_h') || txt.includes('zip1') || txt.includes('post1')) {
+            // 分割パターン (yubing_h, yubing_l, gyubin1, gyubin2, kyubin1, kyubin2)
+            if (txt.includes('_h') || txt.includes('zip1') || txt.includes('post1') || txt.includes('yubin1') || txt.includes('bin1')) {
                 fillField(el, MY_PROFILE.address.zip1);
-            } else if (txt.includes('_l') || txt.includes('zip2') || txt.includes('post2')) {
+            } else if (txt.includes('_l') || txt.includes('zip2') || txt.includes('post2') || txt.includes('yubin2') || txt.includes('bin2')) {
                 fillField(el, MY_PROFILE.address.zip2);
             } else {
-                // 分割されていない場合（文字制限などで判定すべきだが、とりあえずハイフンありで）
+                // 分割されていない場合
                 if (el.maxLength && el.maxLength < 8) {
-                    // 短い場合はハイフンなしかもしれないが、とりあえず何もしないか、zip1を入れるか
-                    // ここでは安全のためzip_fullを入れる
                     fillField(el, MY_PROFILE.address.zip_full);
                 } else {
                     fillField(el, MY_PROFILE.address.zip_full);
@@ -214,12 +212,10 @@ function autoFill() {
         }
 
         // 都道府県
-        if (txt.includes('pref') || txt.includes('ken') || (txt.includes('addr') && txt.includes('1'))) {
+        if (txt.includes('pref') || txt.includes('ken') || (txt.includes('addr') && txt.includes('1')) || txt.includes('gken') || txt.includes('kken')) {
             // inputならテキスト、selectならvalueかtext
             if (el.tagName.toLowerCase() === 'select') {
-                // 都道府県コードか名称か... fillField内でトライする
                 fillField(el, MY_PROFILE.address.prefecture);
-                // ダメならidも
                 fillField(el, MY_PROFILE.address.pref_id); // 13など
             } else {
                 fillField(el, MY_PROFILE.address.prefecture);
@@ -227,67 +223,90 @@ function autoFill() {
         }
 
         // 市区町村、番地
-        if (txt.includes('city') || txt.includes('g1') || txt.includes('shiku')) {
-            fillField(el, MY_PROFILE.address.city);
-        }
-        if (txt.includes('addr') || txt.includes('g2') || txt.includes('ban') || txt.includes('cho') || txt.includes('street')) {
-            // g1, g2 パターン (g1=city, g2=street/ban)
-            if (!txt.includes('g1')) {
-                fillField(el, MY_PROFILE.address.street);
+        if (txt.includes('city') || txt.includes('g1') || txt.includes('shiku') || txt.includes('adrs1') || txt.includes('gadrs1') || txt.includes('kadrs1')) {
+            // gadrs1はaddrも含むかもしれないので、ここを優先
+            fillField(el, MY_PROFILE.address.city + MY_PROFILE.address.street); // 連結して入れるパターンが多い(gadrs1)
+            // もしcityとstreetが分かれているサイト用に単純なcityも試すなら、
+            // 厳密にはHTML構造解析が必要だが、ここでは"city"明確な場合はcityのみ、adrs系はfull/combiを入れる戦略
+            if (txt.includes('city') && !txt.includes('adrs')) {
+                fillField(el, MY_PROFILE.address.city);
             }
         }
-        if (txt.includes('build') || txt.includes('g3') || txt.includes('tate')) {
+        else if (txt.includes('addr') || txt.includes('g2') || txt.includes('ban') || txt.includes('cho') || txt.includes('street')) {
+            // g2はbuildingの場合もあるが... addr系ならstreet
+            fillField(el, MY_PROFILE.address.street);
+        }
+
+        if (txt.includes('build') || txt.includes('g3') || txt.includes('tate') || txt.includes('adrs2') || txt.includes('gadrs2') || txt.includes('kadrs2')) {
             fillField(el, MY_PROFILE.address.building);
         }
 
         // --- 電話番号 ---
         if (txt.includes('tel') || txt.includes('phone') || txt.includes('mobile') || txt.includes('keitai')) {
             // 携帯か自宅か
-            let target = MY_PROFILE.contact.home_tel_full;
+            let targetFull = MY_PROFILE.contact.home_tel_full;
             let p1 = MY_PROFILE.contact.home_tel1;
             let p2 = MY_PROFILE.contact.home_tel2;
             let p3 = MY_PROFILE.contact.home_tel3;
 
-            if (txt.includes('mobile') || txt.includes('keitai')) {
-                target = MY_PROFILE.contact.mobile_tel_full;
+            // "kttel" は携帯くさい, "keitai"も. "gtel"はhome? "ktel"は休暇中 or 緊急?
+            // ここでは mobile/keitai/kttel を携帯とみなす
+            if (txt.includes('mobile') || txt.includes('keitai') || txt.includes('kb') || txt.includes('kttel')) {
+                targetFull = MY_PROFILE.contact.mobile_tel_full;
                 p1 = MY_PROFILE.contact.mobile_tel1;
                 p2 = MY_PROFILE.contact.mobile_tel2;
                 p3 = MY_PROFILE.contact.mobile_tel3;
             }
 
-            if (txt.includes('_h') || txt.includes('part1') || txt.includes('area')) {
+            if (txt.includes('_h') || txt.includes('part1') || txt.includes('area') || txt.includes('tel1') || txt.includes('el1')) {
                 fillField(el, p1);
-            } else if (txt.includes('_m') || txt.includes('part2') || txt.includes('exchange')) {
+            } else if (txt.includes('_m') || txt.includes('part2') || txt.includes('exchange') || txt.includes('tel2') || txt.includes('el2')) {
                 fillField(el, p2);
-            } else if (txt.includes('_l') || txt.includes('part3') || txt.includes('sub')) {
+            } else if (txt.includes('_l') || txt.includes('part3') || txt.includes('sub') || txt.includes('tel3') || txt.includes('el3')) {
                 fillField(el, p3);
             } else {
                 // 分割なし
-                fillField(el, target);
+                fillField(el, targetFull);
             }
         }
 
         // --- メール ---
-        if (txt.includes('mail')) {
-            fillField(el, MY_PROFILE.email.main);
+        if (txt.includes('mail') || txt.includes('account')) {
+            // Split email (account / domain)
+            const emailParts = MY_PROFILE.email.main.split('@');
+
+            if (txt.includes('account') || txt.includes('user')) {
+                fillField(el, emailParts[0]);
+            } else if (txt.includes('domain')) {
+                fillField(el, emailParts[1]);
+            } else {
+                fillField(el, MY_PROFILE.email.main);
+            }
         }
 
         // --- 学校 ---
-        if (txt.includes('school') || txt.includes('daigaku') || txt.includes('univ')) {
+        if (txt.includes('school') || txt.includes('daigaku') || txt.includes('univ') || txt.includes('grad')) {
             // 具体的なパターン
-            if (txt.includes('from_y')) fillField(el, MY_PROFILE.school.from_year);
-            else if (txt.includes('from_m')) fillField(el, MY_PROFILE.school.from_month);
-            else if (txt.includes('to_y')) fillField(el, MY_PROFILE.school.to_year);
-            else if (txt.includes('to_m')) fillField(el, MY_PROFILE.school.to_month);
+            if (txt.includes('from_y') || txt.includes('nyugaku_y')) fillField(el, MY_PROFILE.school.from_year);
+            else if (txt.includes('from_m') || txt.includes('nyugaku_m')) fillField(el, MY_PROFILE.school.from_month);
+
+            // 卒業 (syear, smonth, to_y)
+            else if (txt.includes('to_y') || txt.includes('syear') || txt.includes('sotugyo_y')) fillField(el, MY_PROFILE.school.to_year);
+            else if (txt.includes('to_m') || txt.includes('smonth') || txt.includes('sotugyo_m')) fillField(el, MY_PROFILE.school.to_month);
 
             else if (txt.includes('name') || txt.includes('d_name') || txt.includes('dname')) fillField(el, MY_PROFILE.school.name);
             else if (txt.includes('initial')) fillField(el, MY_PROFILE.school.initial);
 
             // 学校区分 (kubun -> radio 2:大学 usually)
             if (txt.includes('kubun') && el.type === "radio" && el.value == "2") {
-                // 2=大学, 1=大学院 (contextによるが一般的)
                 el.checked = true;
                 fillField(el, "2");
+            }
+            // 卒業区分 (shikbn) 0:見込み
+            if (txt.includes('shikbn') || txt.includes('kbn')) {
+                // 見込み=0, 卒業=1 のケースが多い
+                fillField(el, "0");
+                fillField(el, "1"); // 試行
             }
         }
 
@@ -313,9 +332,9 @@ function autoFill() {
             }
         }
 
-        // "現在の連絡先と同じ" (jushosame)
-        if (txt.includes('jushosame') && el.type === "checkbox") {
-            el.click(); // クリックした方がJSイベントが確実に動く場合が多い
+        // "現在の連絡先と同じ" (jushosame, adch)
+        if ((txt.includes('jushosame') || txt.includes('adch')) && (el.type === "checkbox" || el.type === "radio")) {
+            el.click();
             el.checked = true;
         }
 
