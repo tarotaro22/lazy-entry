@@ -1,5 +1,5 @@
 const MY_DATA = {
-    name: "佐野 龍太郎" // ここは書き換えてOK
+    name: "田中 太郎" // ここは書き換えてOK
 };
 
 console.log("Lazy Entry: 開始します...");
