@@ -4,77 +4,283 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lazy Entry</title>
+    <title>Lazy Entry Settings</title>
     <style>
         :root {
             --primary-color: #3b82f6;
-            --hover-color: #2563eb;
             --bg-color: #f8fafc;
             --text-color: #1e293b;
+            --border-color: #cbd5e1;
+            --error-color: #ef4444;
         }
 
         body {
-            width: 300px;
+            width: 400px;
             padding: 16px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
         }
 
         h1 {
             font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            margin-top: 0;
             text-align: center;
             color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 1rem;
         }
 
-        p {
-            font-size: 0.875rem;
-            color: #64748b;
-            text-align: center;
-            margin-bottom: 20px;
+        .warning {
+            background-color: #fef2f2;
+            border: 1px solid #fee2e2;
+            color: #b91c1c;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            position: sticky;
+            top: 0;
+            background: var(--bg-color);
+            padding: 5px 0;
+            z-index: 10;
         }
 
         button {
-            width: 100%;
-            background-color: var(--primary-color);
-            color: white;
+            flex: 1;
+            padding: 10px;
             border: none;
-            padding: 12px;
             border-radius: 6px;
-            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: opacity 0.2s;
         }
 
         button:hover {
-            background-color: var(--hover-color);
+            opacity: 0.9;
         }
 
-        button:active {
-            transform: translateY(1px);
+        #saveBtn {
+            background-color: #10b981;
+            color: white;
         }
 
-        .footer {
-            margin-top: 16px;
+        #fillBtn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        fieldset {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: white;
+        }
+
+        legend {
+            font-weight: bold;
+            color: #475569;
+            font-size: 0.9rem;
+            padding: 0 4px;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .row:last-child {
+            margin-bottom: 0;
+        }
+
+        .col {
+            flex: 1;
+        }
+
+        label {
+            display: block;
             font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        input::placeholder {
             color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        #status {
             text-align: center;
+            margin-top: 5px;
+            font-size: 0.8rem;
+            height: 1.2em;
         }
     </style>
 </head>
 
 <body>
     <h1>Lazy Entry</h1>
-    <p>就活ES自動入力</p>
-    <button id="fillBtn">自動入力実行</button>
-    <div class="footer">
-        Developed for efficient job hunting
+
+    <div class="warning">
+        <strong>※重要</strong><br>
+        初回は必ず全ての項目を入力して「設定を保存」を押してください。<br>
+        空欄のまま保存すると正しく自動入力されません。
     </div>
+
+    <div class="actions">
+        <button id="fillBtn">自動入力実行</button>
+        <button id="saveBtn">設定を保存</button>
+    </div>
+    <div id="status"></div>
+
+    <form id="settingsForm">
+        <!-- 氏名 -->
+        <fieldset>
+            <legend>氏名 (Name)</legend>
+            <div class="row">
+                <div class="col"><label>姓 (漢字)</label><input type="text" id="kanji_sei" placeholder="例: 山田"></div>
+                <div class="col"><label>名 (漢字)</label><input type="text" id="kanji_mei" placeholder="例: 太郎"></div>
+            </div>
+            <div class="row">
+                <div class="col"><label>セイ (カナ)</label><input type="text" id="kana_sei" placeholder="例: ヤマダ"></div>
+                <div class="col"><label>メイ (カナ)</label><input type="text" id="kana_mei" placeholder="例: タロウ"></div>
+            </div>
+        </fieldset>
+
+        <!-- 生年月日 -->
+        <fieldset>
+            <legend>生年月日 (Birth)</legend>
+            <div class="row">
+                <div class="col"><label>年 (YYYY)</label><input type="number" id="birth_year" placeholder="例: 2000">
+                </div>
+                <div class="col"><label>月</label><input type="number" id="birth_month" placeholder="例: 1"></div>
+                <div class="col"><label>日</label><input type="number" id="birth_day" placeholder="例: 1"></div>
+            </div>
+        </fieldset>
+
+        <!-- 住所 -->
+        <fieldset>
+            <legend>住所 (Address)</legend>
+            <div class="row">
+                <div class="col">
+                    <label>郵便番号 (ハイフンあり)</label>
+                    <input type="text" id="zip_full" placeholder="例: 123-4567">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label>都道府県</label>
+                    <input type="text" id="prefecture" placeholder="例: 東京都">
+                </div>
+                <div class="col">
+                    <label>都道府県CD (任意)</label>
+                    <input type="number" id="pref_id" placeholder="例: 13">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label>市区町村・番地</label>
+                    <input type="text" id="city_street" placeholder="例: 新宿区西新宿1-1-1">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label>建物名 (任意)</label>
+                    <input type="text" id="building" placeholder="例: 試験ビル101">
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- 連絡先 -->
+        <fieldset>
+            <legend>連絡先 (Contact)</legend>
+            <div class="row">
+                <div class="col">
+                    <label>メールアドレス</label>
+                    <input type="email" id="email_main" placeholder="例: taro@example.com">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label>携帯電話 (ハイフンあり)</label>
+                    <input type="tel" id="mobile_tel_full" placeholder="例: 090-1234-5678">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label>自宅電話 (ハイフンあり)</label>
+                    <input type="tel" id="home_tel_full" placeholder="例: 03-1234-5678">
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- 学校情報 -->
+        <fieldset>
+            <legend>学校情報 (School)</legend>
+            <div class="row">
+                <div class="col"><label>学校名</label><input type="text" id="school_name" placeholder="例: 東京大学"></div>
+                <div class="col"><label>頭文字(カナ)</label><input type="text" id="school_initial" placeholder="例: ト"></div>
+            </div>
+            <div class="row">
+                <div class="col"><label>学部</label><input type="text" id="school_faculty" placeholder="例: 工学部"></div>
+                <div class="col"><label>学科</label><input type="text" id="school_department" placeholder="例: 情報工学科">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label>文理区分</label>
+                    <select id="school_bunri">
+                        <option value="">選択...</option>
+                        <option value="文系">文系</option>
+                        <option value="理系">理系</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <label>学校種別</label>
+                    <select id="school_type">
+                        <option value="">選択...</option>
+                        <option value="大学">大学</option>
+                        <option value="大学院">大学院</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col"><label>入学年(YYYY)</label><input type="number" id="school_from_year"
+                        placeholder="例: 2019"></div>
+                <div class="col"><label>月</label><input type="number" id="school_from_month" placeholder="例: 4"></div>
+            </div>
+            <div class="row">
+                <div class="col"><label>卒業年(YYYY)</label><input type="number" id="school_to_year" placeholder="例: 2023">
+                </div>
+                <div class="col"><label>月</label><input type="number" id="school_to_month" placeholder="例: 3"></div>
+            </div>
+        </fieldset>
+    </form>
     <script src="popup.js"></script>
 </body>
 
